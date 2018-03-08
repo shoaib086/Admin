@@ -1,6 +1,7 @@
 package com.example.shoaib.user;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -22,6 +23,8 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 
+import static android.content.Context.MODE_PRIVATE;
+import static com.example.shoaib.user.utils.AppConstants.ip_address;
 import static com.example.shoaib.user.utils.AppConstants.loginemail;
 
 public class signin extends Fragment implements View.OnClickListener, ServiceCallBack {
@@ -102,9 +105,16 @@ ServiceCallBack ty;
             String error = jsonObject.getString("Error");
             Log.d("shoaib", String.valueOf(message));
             if(message=="true") {
-                Intent intent = new Intent(getActivity(), StreamActivity.class);
-                startActivity(intent);
-                getActivity().finish();
+
+                SharedPreferences.Editor editor = getActivity().getSharedPreferences("pref", MODE_PRIVATE).edit();
+                editor.putString("email", loginemail);
+                editor.apply();
+                Intent i= new Intent(getContext(), startedService.class);
+               getContext().startService(i);
+               //  Intent intent = new Intent(getActivity(), StreamActivity.class);
+               // startActivity(intent);
+               // getActivity().finish();
+
             }
             else  {
                 Toast.makeText(getActivity(), "Please enter correct email and password", Toast.LENGTH_LONG).show();

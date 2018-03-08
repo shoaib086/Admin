@@ -1,14 +1,16 @@
 package com.example.shoaib.user.utils;
 
 
+import io.socket.client.Socket;
+
 public class AppConstants {
 
 
     public static final int initialTimeoutMs = 30000;
 
     //Urls
-   // public static final String BASE_URL = "http://reqres.in/api/";
-    public static final String ip_address="http://172.20.52.34:3000";
+   // public static final String BASE_URL = "http://reqres.in/api/";172.20.52.43:3000  192.168.10.17
+    public static final String ip_address="http://172.20.52.43:3000";
     public static final String signin_URL = ip_address+"/login";
     public static final String signup_URL = ip_address+"/register";
     public static final String sendmail_URL = ip_address+"/sendmail";
@@ -18,6 +20,7 @@ public class AppConstants {
     public static  String loginemail="";
     public static  String connectemail="";
     public static final String POST_TAG = "post_request";
+    public static Socket socket;
 
 
 

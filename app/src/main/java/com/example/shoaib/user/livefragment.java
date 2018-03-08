@@ -125,48 +125,34 @@ public class livefragment extends Fragment  {
 
 
 
-                if (peerConnection != null)
-                    return v;
-              //  button.setVisibility(View.GONE);
+        if (peerConnection != null)
+            return v;
+        //  button.setVisibility(View.GONE);
 
 
 
 
-                btn_action.setOnClickListener(new View.OnClickListener() {
+        btn_action.setOnClickListener(new View.OnClickListener() {
 
-                    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-                    @Override
-                    public void onClick(View v) {
-
-                        if (recordService.isRunning()) {
-                            recordService.stopRecord();
-                            Toast.makeText(getActivity(), "Recording Stopped", Toast.LENGTH_SHORT).show();
-                            btn_action.setText("RECORD");
-
-                        }
-                        else {
-                            Intent captureIntent = projectionManager.createScreenCaptureIntent();
-                            startActivityForResult(captureIntent, RECORD_REQUEST_CODE);
-                        }
-                    }
-                });
-
-                startPeerConnection();
-        /*socket.on("notification",  new Emitter.Listener() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
-            public void call(final Object... args) {
+            public void onClick(View v) {
 
-                       String data = (String) args[0];
+                if (recordService.isRunning()) {
+                    recordService.stopRecord();
+                    Toast.makeText(getActivity(), "Recording Stopped", Toast.LENGTH_SHORT).show();
+                    btn_action.setText("RECORD");
 
-
-                            Log.d("done",data);
-
-                            return;
-
-
-
+                }
+                else {
+                    Intent captureIntent = projectionManager.createScreenCaptureIntent();
+                    startActivityForResult(captureIntent, RECORD_REQUEST_CODE);
+                }
             }
-        });*/
+        });
+
+        startPeerConnection();
+
 
         return v;
     }
@@ -240,15 +226,13 @@ public class livefragment extends Fragment  {
                 e.printStackTrace();
             }
             socket.emit(USERNAME,obj);
-
-
             socket.on(CREATEOFFER, new Emitter.Listener() {
 
                 @Override
                 public void call(Object... args) {
 
-                        createOffer = true;
-                        peerConnection.createOffer(sdpObserver, new MediaConstraints());
+                    createOffer = true;
+                    peerConnection.createOffer(sdpObserver, new MediaConstraints());
 
                 }
 
@@ -265,17 +249,6 @@ public class livefragment extends Fragment  {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                }
-
-            }).on("notification", new Emitter.Listener() {
-
-                @Override
-                public void call(Object... args) {
-
-
-                    String b = (String)args[0];
-                        Log.d("done",b);
-
                 }
 
             }).on(ANSWER, new Emitter.Listener() {
