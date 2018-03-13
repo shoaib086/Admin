@@ -1,6 +1,8 @@
-package com.example.shoaib.user;
+package com.example.shoaib.user.cloud;
+
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -15,21 +17,17 @@ import android.os.Environment;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.AppCompatButton;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.crashlytics.android.Crashlytics;
-import com.example.shoaib.user.cloud.UploadVideo;
+import com.example.shoaib.user.R;
 import com.github.angads25.filepicker.controller.DialogSelectionListener;
 import com.github.angads25.filepicker.model.DialogConfigs;
 import com.github.angads25.filepicker.model.DialogProperties;
@@ -56,27 +54,25 @@ import java.io.Writer;
 import io.fabric.sdk.android.Fabric;
 
 import static android.Manifest.permission.INTERNET;
-import static android.app.Activity.RESULT_CANCELED;
-import static android.app.Activity.RESULT_OK;
 import static android.content.Intent.ACTION_VIEW;
 
-
-public class viewFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener{
+public class cloudActivity extends Activity implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
+    // Activity Tag to call in Log command
     Uri videoUri;
 
-
+    // boolean exit to exit application when back pressed three times
     private Boolean exit = false;
 
+    // A view of dialog that ask to choose between upload or watch video
     MaterialDialog chooseDialog;
 
     AppCompatButton viewSavedVideosButton;
-    Button openfile_btn;
+    AppCompatButton viewDriveActionButton;
 
 
+    // Permission code called when write and read permission is triggered (SDK>Marshmallow)
     private static final int REQUEST_WRITE_PERMISSION = 786;
-
-
 
 
     private static final String TAG = "Google Drive Activity";
@@ -90,33 +86,13 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
 
     private GoogleApiClient mGoogleApiClient;
     private boolean fileOperation = false;
-    View v;
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        v= inflater.inflate(R.layout.fragment_view, container, false);
-        Fabric.with(getActivity(), new Crashlytics());
-
-
-
-
-                requestPermission();
-
-
-      //  openfile_btn = (Button) v.findViewById(R.id.openfile);
-
-
-        return v;
-    }
-    final private ResultCallback <DriveFolder.DriveFileResult> fileCallback = new
-            ResultCallback <DriveFolder.DriveFileResult>() {
+    final private ResultCallback<DriveFolder.DriveFileResult> fileCallback = new
+            ResultCallback<DriveFolder.DriveFileResult>() {
                 @Override
                 public void onResult(DriveFolder.DriveFileResult result) {
                     if (result.getStatus().isSuccess()) {
 
-                        Toast.makeText(getActivity().getApplicationContext(), "file created: "+" "+
+                        Toast.makeText(getApplicationContext(), "file created: " + " " +
                                 result.getDriveFile().getDriveId(), Toast.LENGTH_LONG).show();
 
                     }
@@ -130,8 +106,25 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
      * This is Result result handler of Drive contents.
      * this callback method call CreateFileOnGoogleDrive() method.
      */
+    final ResultCallback<DriveApi.DriveContentsResult> driveContentsCallback;
 
-    public void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result){
+    {
+        driveContentsCallback = new ResultCallback<DriveApi.DriveContentsResult>() {
+            @Override
+            public void onResult(DriveApi.DriveContentsResult result) {
+
+                if (result.getStatus().isSuccess()) {
+                    if (fileOperation == true) {
+
+                        CreateFileOnGoogleDrive(result);
+
+                    }
+                }
+            }
+        };
+    }
+
+    public void CreateFileOnGoogleDrive(DriveApi.DriveContentsResult result) {
 
         final DriveContents driveContents = result.getDriveContents();
 
@@ -162,19 +155,51 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
             }
         }.start();
     }
-    private void requestPermission() {
-        // If user doesn't have permission ask user to give permission
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_PERMISSION);
-        }
-        // if user does have permission call FileDialog Function
-        else {
 
-            Log.e(TAG, "permission already granted");
-            createVideoRecordedFolder();
-            callFilePickerDialog();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
+        setContentView(R.layout.activity_cloud);
+
+        if (Build.VERSION.SDK_INT < 23) {
+            //Do not need to check the permission
+
+        } else {
+            if (CheckingPermissionIsEnabledOrNot()) {
+
+            } else {
+                RequestMultiplePermission();
+            }
         }
+
+        if (mGoogleApiClient == null) {
+
+            /**
+             * Create the API client and bind it to an instance variable.
+             * We use this instance as the callback for connection and connection failures.
+             * Since no account name is passed, the user is prompted to choose.
+             */
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(Drive.API)
+                    .addScope(Drive.SCOPE_FILE)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+        }
+
+        mGoogleApiClient.connect();
+        fileOperation = false;
+
+        // create new contents resource
+        Drive.DriveApi.newDriveContents(mGoogleApiClient)
+                .setResultCallback(driveContentsCallbacks);
+
     }
+
+
+
+
     private void createVideoRecordedFolder() {
         String folder_main = "Recorded Videos";
 
@@ -186,6 +211,7 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
         }
 
     }
+
     private void callFilePickerDialog() {
 
         // Set the properties of the File Dialog
@@ -207,7 +233,7 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
         properties.extensions = new String[]{"mp4", "avi", "flv", "mov", "wmv"};
 
         // Creating Object of file Dialog and Setting the Title of it.
-        FilePickerDialog dialog = new FilePickerDialog(getActivity(), properties);
+        FilePickerDialog dialog = new FilePickerDialog(cloudActivity.this, properties);
         dialog.setTitle("Select a Video File");
 
         // Called when user select on a video file. This function will get the Uri of the file you select from the
@@ -233,9 +259,10 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
         // show the FileDialog to choose the video.
         dialog.show();
     }
+
     private void chooseDialog(final Uri uri) {
 
-        chooseDialog = new MaterialDialog.Builder(getActivity())
+        chooseDialog = new MaterialDialog.Builder(this)
                 .title("Video Selected Successfully !")
                 .titleColorRes(R.color.colorPrimary)
                 .content("Choose Whether to Play Video or Upload it.")
@@ -251,17 +278,14 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
                         // In case of Upload button is pressed, call the Upload Activity and pass the String to upload
                         // video activity on google drive.
 
-                        if(!isDeviceOnline())
-                        {
+                        if (!isDeviceOnline()) {
                             chooseDialog.dismiss();
                             showSnackBar();
-                        }
-                        else
-                        {
+                        } else {
                             Log.e(TAG, "upload to google drive");
 
                             // Intent is called to open another activity in Android
-                            Intent intent = new Intent(getActivity(), UploadVideo.class);
+                            Intent intent = new Intent(cloudActivity.this, UploadVideo.class);
 
                             //called to pass value of uri from this activity to the next one
                             intent.putExtra("videoUri", String.valueOf(videoUri));
@@ -289,15 +313,17 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
                 .show();
 
     }
+
     private boolean isDeviceOnline() {
         ConnectivityManager connMgr =
-                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         return (networkInfo != null && networkInfo.isConnected());
     }
+
     void showSnackBar() {
         Snackbar snackbar = Snackbar
-                .make(v.findViewById(android.R.id.content), "No internet connection.", Snackbar.LENGTH_LONG);
+                .make(findViewById(android.R.id.content), "No internet connection.", Snackbar.LENGTH_LONG);
 
 
         View view = snackbar.getView();
@@ -307,6 +333,7 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
         snackbar.show();
 
     }
+
     private void watchVideo(Uri uri) {
 
         // Intent called to play video using video player which already exist in your phone.
@@ -318,13 +345,15 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
         // start the activity to play the video
         startActivity(playVideoIntent);
     }
+
     public boolean CheckingPermissionIsEnabledOrNot() {
 
-        int FirstPermissionResult = ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), INTERNET);
+        int FirstPermissionResult = ContextCompat.checkSelfPermission(getApplicationContext(), INTERNET);
 
 
-        return FirstPermissionResult == PackageManager.PERMISSION_GRANTED ;
+        return FirstPermissionResult == PackageManager.PERMISSION_GRANTED;
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == REQUEST_WRITE_PERMISSION && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -334,23 +363,23 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
             createVideoRecordedFolder();
             callFilePickerDialog();
 
-        }
-        else {
+        } else {
             Log.e(TAG, "permission not granted");
         }
     }
 
+    @Override
     public void onBackPressed() {
         if (exit) {
             Intent intent = new Intent(Intent.ACTION_MAIN);
             intent.addCategory(Intent.CATEGORY_HOME);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);//***Change Here***
             startActivity(intent);
-            getActivity().finish();
+            finish();
             System.exit(0);
             // finish activity
         } else {
-            Toast.makeText(getActivity().getApplicationContext(), "Press Back again to leave.",
+            Toast.makeText(getApplicationContext(), "Press Back again to leave.",
                     Toast.LENGTH_SHORT).show();
             exit = true;
             new Handler().postDelayed(new Runnable() {
@@ -363,18 +392,48 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
         }
     }
 
+    /* @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
 
+            case RequestPermissionCode:
+
+                if (grantResults.length > 0) {
+
+                    boolean InternetPermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+
+                    if (InternetPermission) {
+
+                        Toast.makeText(MainActivity.this, "Permission Granted", Toast.LENGTH_LONG).show();
+
+
+                    } else {
+                        Toast.makeText(MainActivity.this, "Permission Denied", Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                }
+
+                break;
+        }
+    }*/
     private void RequestMultiplePermission() {
 
         // Creating String Array with Permissions.
-        ActivityCompat.requestPermissions(getActivity(), new String[]
+        ActivityCompat.requestPermissions(cloudActivity.this, new String[]
                 {
                         INTERNET
                 }, RequestPermissionCode);
 
     }
 
-    public void onResume() {
+    /**
+     * Called when the activity will start interacting with the user.
+     * At this point your activity is at the top of the activity stack,
+     * with user input going to it.
+     */
+
+    @Override
+    protected void onResume() {
         super.onResume();
 
 
@@ -396,11 +455,11 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
              * We use this instance as the callback for connection and connection failures.
              * Since no account name is passed, the user is prompted to choose.
              */
-            mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addApi(Drive.API)
                     .addScope(Drive.SCOPE_FILE)
-                    //.addConnectionCallbacks(this)
-                    // .addOnConnectionFailedListener(getActivity())
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
                     .build();
         }
 
@@ -408,7 +467,7 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
     }
 
     @Override
-    public void onStop() {
+    protected void onStop() {
         super.onStop();
         if (mGoogleApiClient != null) {
 
@@ -418,7 +477,7 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
         super.onPause();
     }
 
-
+    @Override
     public void onConnectionFailed(ConnectionResult result) {
 
         // Called whenever the API client fails to connect.
@@ -427,7 +486,7 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
         if (!result.hasResolution()) {
 
             // show the localized error dialog.
-            GoogleApiAvailability.getInstance().getErrorDialog(getActivity(), result.getErrorCode(), 0).show();
+            GoogleApiAvailability.getInstance().getErrorDialog(this, result.getErrorCode(), 0).show();
             return;
         }
 
@@ -439,7 +498,7 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
 
         try {
 
-            result.startResolutionForResult(getActivity(), REQUEST_CODE_RESOLUTION);
+            result.startResolutionForResult(this, REQUEST_CODE_RESOLUTION);
 
         } catch (IntentSender.SendIntentException e) {
 
@@ -447,28 +506,52 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
         }
     }
 
-
+    /**
+     * It invoked when Google API client connected
+     *
+     * @param connectionHint
+     */
+    @Override
     public void onConnected(Bundle connectionHint) {
 
-        Toast.makeText(getActivity().getApplicationContext(), "Connected", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_LONG).show();
     }
 
+    /**
+     * It invoked when connection suspended
+     *
+     * @param cause
+     */
+    @Override
     public void onConnectionSuspended(int cause) {
 
         Log.i(TAG, "GoogleApiClient connection suspended");
     }
 
+    public void onClickCreateFile(View view) {
 
-    public void onClickOpenFile(View view){
+        fileOperation = true;
+        // create new contents resource
+        Drive.DriveApi.newDriveContents(mGoogleApiClient)
+                .setResultCallback(driveContentsCallback);
 
     }
+
+    public void onClickOpenFile(View view) {
+        fileOperation = false;
+
+        // create new contents resource
+        Drive.DriveApi.newDriveContents(mGoogleApiClient)
+                .setResultCallback(driveContentsCallbacks);
+    }
+
     /**
      * This is Result result handler of Drive contents.
      * this callback method call CreateFileOnGoogleDrive() method
      * and also call OpenFileFromGoogleDrive() method, send intent onActivityResult() method to handle result.
      */
     ResultCallback<DriveApi.DriveContentsResult> driveContentsCallbacks =
-            new ResultCallback <DriveApi.DriveContentsResult>() {
+            new ResultCallback<DriveApi.DriveContentsResult>() {
                 @Override
                 public void onResult(DriveApi.DriveContentsResult result) {
 
@@ -486,34 +569,39 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
                     }
                 }
             };
+
     /**
-     *  Open list of folder and file of the Google Drive
+     * Open list of folder and file of the Google Drive
      */
-    public void OpenFileFromGoogleDrive(){
+    public void OpenFileFromGoogleDrive() {
 
         IntentSender intentSender = Drive.DriveApi
                 .newOpenFileActivityBuilder()
 
                 .setActivityTitle("Select a video file")
-                .setMimeType(new String[] { "video/mp4" })
+                .setMimeType(new String[]{"video/mp4"})
                 .build(mGoogleApiClient);
-        StreamActivity myAct = (StreamActivity) getActivity();
+        try {
+            startIntentSenderForResult(
 
-        myAct.drive(intentSender,RECORD_REQUEST_CODE);
+                    intentSender, REQUEST_CODE_OPENER, null, 0, 0, 0);
 
-
+        } catch (IntentSender.SendIntentException e) {
+            Log.w(TAG, "Unable to send intent", e);
+        }
     }
 
 
-
     /**
-     *  Handle Response of selected file
+     * Handle Response of selected file
+     *
      * @param requestCode
      * @param resultCode
      * @param data
      */
-    public void onActivityResult(final int requestCode,
-                                 final int resultCode, final Intent data) {
+    @Override
+    protected void onActivityResult(final int requestCode,
+                                    final int resultCode, final Intent data) {
         switch (requestCode) {
 
             case REQUEST_CODE_OPENER:
@@ -526,17 +614,14 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
                     Log.e("file id", mFileId.getResourceId() + "");
 
 
-
-                    String url = "https://drive.google.com/open?id="+ mFileId.getResourceId();
+                    String url = "https://drive.google.com/open?id=" + mFileId.getResourceId();
                     Intent i = new Intent(ACTION_VIEW);
                     i.setData(Uri.parse(url));
                     startActivity(i);
 
-                }
-                else if(resultCode==RESULT_CANCELED)
-                {
+                } else if (resultCode == RESULT_CANCELED) {
 
-                    getActivity().finish();
+                    finish();
                 }
 
                 break;
@@ -546,7 +631,4 @@ public class viewFragment extends Fragment implements GoogleApiClient.Connection
                 break;
         }
     }
-
-
-
 }

@@ -3,6 +3,7 @@ package com.example.shoaib.user;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -25,7 +26,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
+import com.example.shoaib.user.cloud.cloudActivity;
+import com.example.shoaib.user.cloud.viewActivity;
 import com.example.shoaib.user.listeners.ServiceCallBack;
+import com.example.shoaib.user.notification.notificationFragment;
 import com.example.shoaib.user.utils.AppConstants;
 import com.example.shoaib.user.utils.VolleyRequestHandler;
 
@@ -136,20 +140,26 @@ public void drive(IntentSender intent, int REQUEST_CODE_OPENER)
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+          /*  FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             // CmailFragment fragment = new CmailFragment();
             cloudFragment fragment = new cloudFragment();
             fragmentTransaction.replace(R.id.content_frame, fragment);
+            fragmentTransaction.commit()*/;
 
-            fragmentTransaction.commit();
+            Intent intent = new Intent(this, cloudActivity.class);
+            startActivity(intent);
+
+
         } else if (id == R.id.nav_gallery) {
 
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+          /*  FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             // CmailFragment fragment = new CmailFragment();
             viewFragment fragment = new viewFragment();
             fragmentTransaction.replace(R.id.content_frame, fragment);
 
-            fragmentTransaction.commit();
+            fragmentTransaction.commit();*/
+            Intent intent = new Intent(this, viewActivity.class);
+            startActivity(intent);
 
         } else if (id == R.id.nav_slideshow) {
 
@@ -157,6 +167,15 @@ public void drive(IntentSender intent, int REQUEST_CODE_OPENER)
             startActivity(intent);
             this.finish();
 
+        }
+        else if (id == R.id.nav_noti) {
+
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            // CmailFragment fragment = new CmailFragment();
+            notificationFragment fragment = new notificationFragment();
+            fragmentTransaction.replace(R.id.content_frame, fragment);
+
+            fragmentTransaction.commit();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -179,5 +198,14 @@ public void drive(IntentSender intent, int REQUEST_CODE_OPENER)
         Toast.makeText(this, requestTag + ">>>" + message, Toast.LENGTH_LONG).show();
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SharedPreferences.Editor editor = getSharedPreferences("pref", MODE_PRIVATE).edit();
+        editor.putString("email", loginemail);
+        editor.apply();
+        Intent i= new Intent(getApplicationContext(), startedService.class);
+        getApplicationContext().startService(i);
+        getApplicationContext().stopService(i);
+    }
 }

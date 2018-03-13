@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
@@ -13,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -24,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -46,6 +49,8 @@ import org.webrtc.VideoTrack;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -60,6 +65,7 @@ import static android.content.Context.MEDIA_PROJECTION_SERVICE;
 import static com.example.shoaib.user.utils.AppConstants.connectemail;
 import static com.example.shoaib.user.utils.AppConstants.ip_address;
 import static com.example.shoaib.user.utils.AppConstants.loginemail;
+import static com.google.android.gms.internal.zzagr.runOnUiThread;
 
 /////
 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -99,6 +105,10 @@ public class livefragment extends Fragment  {
     private Button btn_action;
     private Boolean exit = false;
     private  ImageButton button;
+    long starttime = 0;
+    TextView text;
+    int count=0;
+    Timer T;
 
 
     @Override
@@ -109,6 +119,7 @@ public class livefragment extends Fragment  {
 
         View v= inflater.inflate(R.layout.livestream1, container, false);
         btn_action = (Button) v.findViewById(R.id.btn_action);
+        text = (TextView) v.findViewById(R.id.textView);
         initializeProjectionRecord();
 
         if (Build.VERSION.SDK_INT < 23) {
@@ -129,6 +140,9 @@ public class livefragment extends Fragment  {
             return v;
         //  button.setVisibility(View.GONE);
 
+        //this  posts a message to the main thread from our timertask
+        //and updates the textfield
+
 
 
 
@@ -142,6 +156,8 @@ public class livefragment extends Fragment  {
                     recordService.stopRecord();
                     Toast.makeText(getActivity(), "Recording Stopped", Toast.LENGTH_SHORT).show();
                     btn_action.setText("RECORD");
+                    T.cancel();
+                    count=0;
 
                 }
                 else {
@@ -156,6 +172,7 @@ public class livefragment extends Fragment  {
 
         return v;
     }
+
 
 
     private void initializePeerConnection(View v) {
@@ -347,6 +364,24 @@ public class livefragment extends Fragment  {
                 }
             }, 1000);
             btn_action.setText("Stop");
+
+
+            T=new Timer();
+            T.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            text.setText(count+":00");
+                            count++;
+                        }
+                    });
+                }
+            }, 1000, 1000);
+
             Toast.makeText(getActivity(), "Recording Started", Toast.LENGTH_SHORT).show();
         }
     }

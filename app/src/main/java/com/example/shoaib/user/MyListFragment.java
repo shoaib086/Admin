@@ -32,9 +32,6 @@ public class MyListFragment extends Fragment implements
     List<RowItem> rowItems;
     public static  String[] titles;
 
-    public static String[] descriptions;
-
-    public static  Integer[] images;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -81,22 +78,20 @@ public class MyListFragment extends Fragment implements
     public void onSuccess(String requestTag, Object data) throws UnsupportedEncodingException {
         try {
             titles=null;
-            descriptions=null;
-            images=null;
+
             Log.d("Json",  data.toString());
             JSONObject mainObj  = new JSONObject(data.toString());
             if(mainObj != null){
                 JSONArray list = mainObj.getJSONArray("Users");
                 titles=new String[list.length()];
-                descriptions=new String[list.length()];
-                images=new Integer[list.length()];
+
                 if(list != null){
                     for(int i = 0; i < list.length();i++){
                         JSONObject elem = list.getJSONObject(i);
                         if(elem != null){
                             titles[i] = elem.getString("name");
-                            descriptions[i] = "Click to connect";
-                            images[i]=R.drawable.camera;
+
+
                         }
                     }
                 }
@@ -108,7 +103,7 @@ public class MyListFragment extends Fragment implements
 
             rowItems = new ArrayList<RowItem>();
             for (int i = 0; i < titles.length; i++) {
-                RowItem item = new RowItem(images[i], titles[i], descriptions[i]);
+                RowItem item = new RowItem(titles[i]);
                 rowItems.add(item);
             }
 

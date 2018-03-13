@@ -1,7 +1,9 @@
 package com.example.shoaib.user;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +19,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         hello();
+        if(isServiceRunning()){
+            Intent i= new Intent(getApplicationContext(), startedService.class);
+            getApplicationContext().stopService(i);
+        }
 
         FragmentManager fragmentManager =getFragmentManager();
         FragmentTransaction fragmentTransaction =getSupportFragmentManager().beginTransaction();
@@ -26,6 +32,15 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.commit();
 
 
+    }
+    private boolean isServiceRunning() {
+        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
+            if("com.example.shoaib.user.startedService".equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
     void hello(){
         ActivityCompat.requestPermissions(MainActivity.this,

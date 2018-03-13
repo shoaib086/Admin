@@ -7,12 +7,14 @@ import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.media.MediaRecorder;
 import android.media.projection.MediaProjection;
+import android.opengl.GLSurfaceView;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Environment;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.support.annotation.RequiresApi;
+import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -142,10 +144,12 @@ public class RecordService extends Service {
     * */
     private void initRecorder() {
         //  mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
 
+        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+        long time=System.currentTimeMillis();
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mediaRecorder.setOutputFile(getsaveDirectory() + "video" + System.currentTimeMillis() + ".mp4");
+        mediaRecorder.setOutputFile(getsaveDirectory() + "video" + time + ".mp4");
+        Log.d("done",getsaveDirectory() + "video" + time + ".mp4");
 
         mediaRecorder.setVideoSize(width, (int) (height * 0.75));
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);

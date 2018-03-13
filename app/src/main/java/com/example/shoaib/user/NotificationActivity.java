@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -44,6 +45,8 @@ import org.webrtc.VideoTrack;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -55,6 +58,7 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.example.shoaib.user.utils.AppConstants.connectemail;
 import static com.example.shoaib.user.utils.AppConstants.ip_address;
 import static com.example.shoaib.user.utils.AppConstants.loginemail;
+import static com.google.android.gms.internal.zzagr.runOnUiThread;
 
 /////
 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -94,8 +98,11 @@ public class NotificationActivity extends AppCompatActivity {
     private Button btn_action;
     private Boolean exit = false;
     private  ImageButton button;
+    int count;
+    TextView text;
 
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,6 +110,7 @@ public class NotificationActivity extends AppCompatActivity {
 
 
         btn_action = (Button) findViewById(R.id.btn_action);
+        text = (TextView) findViewById(R.id.textView);
         initializeProjectionRecord();
 
         if (Build.VERSION.SDK_INT < 23) {
@@ -132,16 +140,9 @@ public class NotificationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (recordService.isRunning()) {
-                    recordService.stopRecord();
-                    Toast.makeText(NotificationActivity.this, "Recording Stopped", Toast.LENGTH_SHORT).show();
-                    btn_action.setText("RECORD");
 
-                }
-                else {
-                    Intent captureIntent = projectionManager.createScreenCaptureIntent();
-                    startActivityForResult(captureIntent, RECORD_REQUEST_CODE);
-                }
+
+
             }
         });
 
@@ -198,6 +199,7 @@ public class NotificationActivity extends AppCompatActivity {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void startPeerConnection() {
         ArrayList<PeerConnection.IceServer> iceServers = new ArrayList<>();
         iceServers.add(new PeerConnection.IceServer("stun:stun.l.google.com:19302"));
@@ -279,6 +281,20 @@ public class NotificationActivity extends AppCompatActivity {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+        Toast.makeText(NotificationActivity.this, "Recording Started", Toast.LENGTH_SHORT).show();
+        btn_action.setText("Stop");
+        Intent captureIntent = projectionManager.createScreenCaptureIntent();
+        startActivityForResult(captureIntent, RECORD_REQUEST_CODE);
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(NotificationActivity.this, "Recording Stopped", Toast.LENGTH_SHORT).show();
+                recordService.stopRecord();
+                finish();
+
+            }
+        }, 10000);  //the time is in miliseconds
 
     }
 
@@ -342,6 +358,21 @@ public class NotificationActivity extends AppCompatActivity {
             }, 1000);
             btn_action.setText("Stop");
             Toast.makeText(this, "Recording Started", Toast.LENGTH_SHORT).show();
+            Timer T=new Timer();
+            T.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            text.setText(count+":00");
+                            count++;
+                        }
+                    });
+                }
+            }, 1000, 1000);
         }
     }
 

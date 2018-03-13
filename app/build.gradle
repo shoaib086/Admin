@@ -72,4 +72,5 @@ dependencies {
         transitive = true
     }
     compile 'com.google.firebase:firebase-core:11.6.2'
+    compile 'com.android.support:recyclerview-v7:26.1.0'
 }

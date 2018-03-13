@@ -109,11 +109,11 @@ ServiceCallBack ty;
                 SharedPreferences.Editor editor = getActivity().getSharedPreferences("pref", MODE_PRIVATE).edit();
                 editor.putString("email", loginemail);
                 editor.apply();
-                Intent i= new Intent(getContext(), startedService.class);
-               getContext().startService(i);
-               //  Intent intent = new Intent(getActivity(), StreamActivity.class);
-               // startActivity(intent);
-               // getActivity().finish();
+                //Intent i= new Intent(getContext(), startedService.class);
+               //getContext().startService(i);
+                 Intent intent = new Intent(getActivity(), StreamActivity.class);
+                startActivity(intent);
+                getActivity().finish();
 
             }
             else  {
