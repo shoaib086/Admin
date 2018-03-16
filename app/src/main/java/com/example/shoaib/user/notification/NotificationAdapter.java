@@ -16,12 +16,12 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     private List<Notification> moviesList;
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView detection, videoid;
+        public TextView detection;
 
         public MyViewHolder(View view) {
             super(view);
             detection = (TextView) view.findViewById(R.id.detection);
-            videoid = (TextView) view.findViewById(R.id.videoid);
+
 
         }
     }
@@ -43,7 +43,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     public void onBindViewHolder(MyViewHolder holder, int position) {
         Notification movie = moviesList.get(position);
         holder.detection.setText(movie.getDetection());
-        holder.videoid.setText(movie.getVideoid());
+
 
     }
 

@@ -16,6 +16,8 @@ import android.os.IBinder;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 
+import com.example.shoaib.user.utils.AppConstants;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -144,9 +146,14 @@ public class RecordService extends Service {
     * */
     private void initRecorder() {
         //  mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-
-        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
         long time=System.currentTimeMillis();
+        if(AppConstants.videoid!=0)
+        {
+            time=AppConstants.videoid;
+        }
+        Log.d("done","videoname"+time);
+        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mediaRecorder.setOutputFile(getsaveDirectory() + "video" + time + ".mp4");
         Log.d("done",getsaveDirectory() + "video" + time + ".mp4");

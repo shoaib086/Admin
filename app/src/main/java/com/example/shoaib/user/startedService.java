@@ -51,7 +51,9 @@ public class startedService extends Service {
         }
         obj = new JSONObject();
         try {
+            long videoid=System.currentTimeMillis();
             obj.put("email",loginemail);
+            obj.put("videoid",videoid);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -75,12 +77,15 @@ public class startedService extends Service {
                     String email=obj.getString("email");
 
                 String loginemail=obj.getString("loginemail");
+                AppConstants.videoid=obj.getLong("videoid");
+                Log.d("done","Received"+String.valueOf(AppConstants.videoid));
                 AppConstants.connectemail=loginemail;
                 Log.d("done",email+loginemail);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 socket.close();
+
                 Intent intent = new Intent(getApplicationContext(), NotificationActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);

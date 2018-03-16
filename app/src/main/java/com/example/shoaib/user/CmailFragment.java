@@ -33,7 +33,7 @@ public class CmailFragment extends Fragment {
                 connectemail = email.getText().toString();
                 FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
                 livefragment fragment = new livefragment();
-                fragmentTransaction.add(R.id.content_frame, fragment);
+                fragmentTransaction.replace(R.id.content_frame, fragment);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
             }

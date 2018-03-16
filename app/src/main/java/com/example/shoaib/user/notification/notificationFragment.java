@@ -3,9 +3,11 @@ package com.example.shoaib.user.notification;
 
         import android.graphics.Movie;
         import android.os.Bundle;
+        import android.support.design.widget.FloatingActionButton;
         import android.support.v4.app.Fragment;
         import android.support.v4.app.FragmentTransaction;
         import android.support.v7.widget.DefaultItemAnimator;
+        import android.support.v7.widget.DividerItemDecoration;
         import android.support.v7.widget.LinearLayoutManager;
         import android.support.v7.widget.RecyclerView;
         import android.util.Log;
@@ -54,6 +56,8 @@ public class notificationFragment extends Fragment implements View.OnClickListen
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(mAdapter);
+        recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), LinearLayoutManager.VERTICAL));
+
 
 
         JSONObject requestObject = new JSONObject();
@@ -69,6 +73,7 @@ public class notificationFragment extends Fragment implements View.OnClickListen
             @Override
             public void onClick(View view, int position) {
                 Notification movie = movieList.get(position);
+                AppConstants.reqid=movie.getVideoid();
                 Toast.makeText(getContext().getApplicationContext(), movie.getVideoid() + " is selected!", Toast.LENGTH_SHORT).show();
                 FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
                 playvideoFragment fragment = new playvideoFragment();
@@ -94,19 +99,24 @@ public class notificationFragment extends Fragment implements View.OnClickListen
     @Override
     public void onSuccess(String requestTag, Object data) throws UnsupportedEncodingException {
         Toast.makeText(getActivity(), data.toString(), Toast.LENGTH_LONG).show();
-        Log.d("data", data.toString());
+        Log.d("tts", data.toString());
         JSONObject mainObj = null;
         try {
             mainObj = new JSONObject(data.toString());
-
+            Notification movie;
             if (mainObj != null) {
                 JSONArray list = mainObj.getJSONArray("Users");
                 if (list != null) {
                     for (int i = 0; i < list.length(); i++) {
                         JSONObject elem = list.getJSONObject(i);
                         if (elem != null) {
+                            String [] date = elem.getString("datetime").split("T");
+                            String [] time = date[1].split("\\.");
+                            String mainChapterNumber = date[1].split("\\.", 2)[0];
+                            Log.d("done",mainChapterNumber);
+                            String detection="Activity has been detected on camera "+elem.getString("name")+" Faces has been detected "+elem.getString("faces")+" at "+date[0]+" "+mainChapterNumber;
                            // Notification movie = new Notification(elem.getString("activity"), elem.getString("faces"), elem.getString("datetime"),elem.getString("videoid"));
-                            Notification movie = new Notification(elem.getString("activity"),elem.getString("videoid"));
+                            movie = new Notification(detection,elem.getString("videoid"));
                             movieList.add(movie);
                         }
                     }

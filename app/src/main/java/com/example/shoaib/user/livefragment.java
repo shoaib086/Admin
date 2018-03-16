@@ -21,6 +21,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -92,7 +93,7 @@ public class livefragment extends Fragment  {
     private PeerConnection peerConnection;
     private MediaStream localMediaStream;
     private VideoRenderer otherPeerRenderer;
-    private Socket socket;
+    private Socket socket=null;
     private boolean createOffer = false;
     private boolean user = false;
     private static final int RECORD_REQUEST_CODE = 101;
@@ -120,6 +121,9 @@ public class livefragment extends Fragment  {
         View v= inflater.inflate(R.layout.livestream1, container, false);
         btn_action = (Button) v.findViewById(R.id.btn_action);
         text = (TextView) v.findViewById(R.id.textView);
+        Intent i= new Intent(getActivity().getApplicationContext(), startedService.class);
+        getActivity().getApplicationContext().stopService(i);
+
         initializeProjectionRecord();
 
         if (Build.VERSION.SDK_INT < 23) {
@@ -168,6 +172,29 @@ public class livefragment extends Fragment  {
         });
 
         startPeerConnection();
+        v.setFocusableInTouchMode(true);
+        v.requestFocus();
+        v.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                Log.d("done", "keyCode: " + keyCode);
+                if( keyCode == KeyEvent.KEYCODE_BACK ) {
+                    Log.d("done", "onKey Back listener is working!!!");
+                    if(socket!=null) {
+
+                        Log.d("done","socket off");
+                        peerConnection.close();
+                        socket.close();
+                        Intent i= new Intent(getActivity().getApplicationContext(), startedService.class);
+                        getActivity().getApplicationContext().startService(i);
+                    }
+
+
+                    return false;
+                }
+                return false;
+            }
+        });
 
 
         return v;

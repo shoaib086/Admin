@@ -6,12 +6,12 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_camera"
-            android:icon="@drawable/cloud"
-            android:title="Upload/Watch Video" />
+            android:icon="@drawable/drive"
+            android:title="Open Drive" />
         <item
             android:id="@+id/nav_gallery"
-            android:icon="@drawable/drive"
-            android:title="View Drive files" />
+            android:icon="@drawable/cloud"
+            android:title="Upload/Play Video" />
         <item
             android:id="@+id/nav_noti"
             android:icon="@drawable/notification"

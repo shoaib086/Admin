@@ -294,7 +294,7 @@ public class NotificationActivity extends AppCompatActivity {
                 finish();
 
             }
-        }, 10000);  //the time is in miliseconds
+        }, 12000);  //the time is in miliseconds
 
     }
 

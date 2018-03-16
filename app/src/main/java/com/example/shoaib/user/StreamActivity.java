@@ -81,9 +81,15 @@ public class StreamActivity extends AppCompatActivity
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         // CmailFragment fragment = new CmailFragment();
         MyListFragment fragment = new MyListFragment();
-        fragmentTransaction.add(R.id.content_frame, fragment);
+        fragmentTransaction.replace(R.id.content_frame, fragment);
 
         fragmentTransaction.commit();
+        SharedPreferences.Editor editor = getSharedPreferences("pref", MODE_PRIVATE).edit();
+        editor.putString("email", loginemail);
+        editor.apply();
+        Intent i= new Intent(getApplicationContext(), startedService.class);
+        getApplicationContext().startService(i);
+
 
 
     }
@@ -201,11 +207,6 @@ public void drive(IntentSender intent, int REQUEST_CODE_OPENER)
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        SharedPreferences.Editor editor = getSharedPreferences("pref", MODE_PRIVATE).edit();
-        editor.putString("email", loginemail);
-        editor.apply();
-        Intent i= new Intent(getApplicationContext(), startedService.class);
-        getApplicationContext().startService(i);
-        getApplicationContext().stopService(i);
+
     }
 }

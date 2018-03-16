@@ -11,6 +11,7 @@ import android.widget.MediaController;
 import android.widget.VideoView;
 
 import com.example.shoaib.user.R;
+import com.example.shoaib.user.utils.AppConstants;
 
 public class playvideoFragment extends Fragment {
 
@@ -22,7 +23,7 @@ public class playvideoFragment extends Fragment {
         View v= inflater.inflate(R.layout.fragment_playvideo, container, false);
         VideoView simpleVideoView = (VideoView) v.findViewById(R.id.simpleVideoView);
        // simpleVideoView.setVideoURI(Uri.parse("android.resource://" + getActivity().getPackageName() + "/" + R.raw.wordpress));
-         simpleVideoView.setVideoURI(Uri.parse("/storage/emulated/0/Recorded Videos/video1520841678223.mp4"));
+         simpleVideoView.setVideoURI(Uri.parse("/storage/emulated/0/Recorded Videos/video"+ AppConstants.reqid+".mp4"));
 
         MediaController mediaController = new
                 MediaController(getContext());
