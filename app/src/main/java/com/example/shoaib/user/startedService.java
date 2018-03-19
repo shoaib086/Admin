@@ -81,9 +81,18 @@ public class startedService extends Service {
                 Log.d("done","Received"+String.valueOf(AppConstants.videoid));
                 AppConstants.connectemail=loginemail;
                 Log.d("done",email+loginemail);
+                JSONObject obj2=new JSONObject();
+                    obj2.put("email",obj.getString("email"));
+                    obj2.put("loginemail",obj.getString("loginemail"));
+                    obj2.put("videoid",obj.getString("videoid"));
+                    obj2.put("faceno",obj.getString("faceno"));
+                    obj2.put("datetime",obj.getString("datetime"));
+                    socket.emit("writenoti",obj2);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
                 socket.close();
 
                 Intent intent = new Intent(getApplicationContext(), NotificationActivity.class);

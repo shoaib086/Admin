@@ -107,7 +107,8 @@ public class NotificationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.livestream1);
-
+        Intent i= new Intent(getApplicationContext(), startedService.class);
+        getApplicationContext().stopService(i);
 
         btn_action = (Button) findViewById(R.id.btn_action);
         text = (TextView) findViewById(R.id.textView);
@@ -292,6 +293,7 @@ public class NotificationActivity extends AppCompatActivity {
                 Toast.makeText(NotificationActivity.this, "Recording Stopped", Toast.LENGTH_SHORT).show();
                 recordService.stopRecord();
                 finish();
+                System.exit(0);
 
             }
         }, 12000);  //the time is in miliseconds
@@ -331,6 +333,8 @@ public class NotificationActivity extends AppCompatActivity {
             recordService.stopRecord();
             Toast.makeText(this, "Recording Stopped", Toast.LENGTH_SHORT).show();
         }
+        Intent i= new Intent(getApplicationContext(), startedService.class);
+        getApplicationContext().startService(i);
 
     }
 
@@ -561,7 +565,7 @@ public class NotificationActivity extends AppCompatActivity {
     };
 
 
-
+    @Override
     public void onBackPressed() {
         if (exit) {
             if (recordService.isRunning()) {

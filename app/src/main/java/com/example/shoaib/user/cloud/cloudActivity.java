@@ -200,152 +200,6 @@ public class cloudActivity extends Activity implements GoogleApiClient.Connectio
 
 
 
-    private void createVideoRecordedFolder() {
-        String folder_main = "Recorded Videos";
-
-        File f = new File(Environment.getExternalStorageDirectory(), folder_main);
-
-        if (!f.exists()) {
-            Log.e(TAG, "folder Created");
-            f.mkdirs();
-        }
-
-    }
-
-    private void callFilePickerDialog() {
-
-        // Set the properties of the File Dialog
-        DialogProperties properties = new DialogProperties();
-
-        // Selection mode of the file picked. In your case it is single file selection mode.
-        properties.selection_mode = DialogConfigs.SINGLE_MODE;
-        properties.selection_type = DialogConfigs.FILE_SELECT;
-
-        // The folder which will be shown when fileDialog is called. In your case it is Recorded videos folder
-        properties.root = new File(Environment.getExternalStorageDirectory().getPath()
-                + File.separator + "Recorded Videos" + File.separator);
-
-        // Properties to deal with exceptions.
-        properties.error_dir = new File(DialogConfigs.DEFAULT_DIR);
-        properties.offset = new File(DialogConfigs.DEFAULT_DIR);
-
-        // Defining the extension of videos which the fileDialog will show to user.
-        properties.extensions = new String[]{"mp4", "avi", "flv", "mov", "wmv"};
-
-        // Creating Object of file Dialog and Setting the Title of it.
-        FilePickerDialog dialog = new FilePickerDialog(cloudActivity.this, properties);
-        dialog.setTitle("Select a Video File");
-
-        // Called when user select on a video file. This function will get the Uri of the file you select from the
-        // video list
-        dialog.setDialogSelectionListener(new DialogSelectionListener() {
-            @Override
-            public void onSelectedFilePaths(String[] files) {
-                //files is the array of the paths of files selected by the Application User.
-                Log.e(TAG, "" + files[0]);
-
-                if (files.length != 0) {
-                    videoUri = Uri.parse(files[0]);
-                }
-
-                if (videoUri != null) {
-                    // Call a Dialog to choose whether to play video or upload it.
-                    chooseDialog(videoUri);
-                }
-
-            }
-        });
-
-        // show the FileDialog to choose the video.
-        dialog.show();
-    }
-
-    private void chooseDialog(final Uri uri) {
-
-        chooseDialog = new MaterialDialog.Builder(this)
-                .title("Video Selected Successfully !")
-                .titleColorRes(R.color.colorPrimary)
-                .content("Choose Whether to Play Video or Upload it.")
-                .positiveText("Upload")
-                .negativeText("Play")
-                .positiveColorRes(R.color.colorAccent)
-                .negativeColorRes(R.color.colorAccent)
-
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(MaterialDialog dialog, DialogAction which) {
-
-                        // In case of Upload button is pressed, call the Upload Activity and pass the String to upload
-                        // video activity on google drive.
-
-                        if (!isDeviceOnline()) {
-                            chooseDialog.dismiss();
-                            showSnackBar();
-                        } else {
-                            Log.e(TAG, "upload to google drive");
-
-                            // Intent is called to open another activity in Android
-                            Intent intent = new Intent(cloudActivity.this, UploadVideo.class);
-
-                            //called to pass value of uri from this activity to the next one
-                            intent.putExtra("videoUri", String.valueOf(videoUri));
-
-                            // used to start the activity mean hiding the current screen and showing/opening
-                            //next one
-                            startActivity(intent);
-
-                        }
-
-                    }
-                })
-
-                .onNegative(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(MaterialDialog dialog, DialogAction which) {
-
-                        Log.e(TAG, "play video");
-
-                        //call play video function here and pass the uri to it.
-                        watchVideo(uri);
-                    }
-                })
-                .cancelable(true)
-                .show();
-
-    }
-
-    private boolean isDeviceOnline() {
-        ConnectivityManager connMgr =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        return (networkInfo != null && networkInfo.isConnected());
-    }
-
-    void showSnackBar() {
-        Snackbar snackbar = Snackbar
-                .make(findViewById(android.R.id.content), "No internet connection.", Snackbar.LENGTH_LONG);
-
-
-        View view = snackbar.getView();
-        TextView tv = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
-        tv.setTextColor(Color.WHITE);
-
-        snackbar.show();
-
-    }
-
-    private void watchVideo(Uri uri) {
-
-        // Intent called to play video using video player which already exist in your phone.
-        Intent playVideoIntent = new Intent(ACTION_VIEW);
-
-        //tell intent the path where the video exist
-        playVideoIntent.setDataAndType(uri, "video/*");
-
-        // start the activity to play the video
-        startActivity(playVideoIntent);
-    }
-
     public boolean CheckingPermissionIsEnabledOrNot() {
 
         int FirstPermissionResult = ContextCompat.checkSelfPermission(getApplicationContext(), INTERNET);
@@ -360,8 +214,7 @@ public class cloudActivity extends Activity implements GoogleApiClient.Connectio
 
             Log.e(TAG, "permission granted");
 
-            createVideoRecordedFolder();
-            callFilePickerDialog();
+
 
         } else {
             Log.e(TAG, "permission not granted");
@@ -370,52 +223,13 @@ public class cloudActivity extends Activity implements GoogleApiClient.Connectio
 
     @Override
     public void onBackPressed() {
-        if (exit) {
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_HOME);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);//***Change Here***
-            startActivity(intent);
-            finish();
-            System.exit(0);
-            // finish activity
-        } else {
-            Toast.makeText(getApplicationContext(), "Press Back again to leave.",
-                    Toast.LENGTH_SHORT).show();
-            exit = true;
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    exit = false;
-                }
-            }, 3 * 1000);
 
-        }
+            finish();
+
+
     }
 
-    /* @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
 
-            case RequestPermissionCode:
-
-                if (grantResults.length > 0) {
-
-                    boolean InternetPermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-
-                    if (InternetPermission) {
-
-                        Toast.makeText(MainActivity.this, "Permission Granted", Toast.LENGTH_LONG).show();
-
-
-                    } else {
-                        Toast.makeText(MainActivity.this, "Permission Denied", Toast.LENGTH_LONG).show();
-                        finish();
-                    }
-                }
-
-                break;
-        }
-    }*/
     private void RequestMultiplePermission() {
 
         // Creating String Array with Permissions.
@@ -437,33 +251,6 @@ public class cloudActivity extends Activity implements GoogleApiClient.Connectio
         super.onResume();
 
 
-        if (Build.VERSION.SDK_INT < 23) {
-            //Do not need to check the permission
-
-        } else {
-            if (CheckingPermissionIsEnabledOrNot()) {
-
-            } else {
-                RequestMultiplePermission();
-            }
-        }
-
-        if (mGoogleApiClient == null) {
-
-            /**
-             * Create the API client and bind it to an instance variable.
-             * We use this instance as the callback for connection and connection failures.
-             * Since no account name is passed, the user is prompted to choose.
-             */
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(Drive.API)
-                    .addScope(Drive.SCOPE_FILE)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build();
-        }
-
-        mGoogleApiClient.connect();
     }
 
     @Override
@@ -528,28 +315,6 @@ public class cloudActivity extends Activity implements GoogleApiClient.Connectio
         Log.i(TAG, "GoogleApiClient connection suspended");
     }
 
-    public void onClickCreateFile(View view) {
-
-        fileOperation = true;
-        // create new contents resource
-        Drive.DriveApi.newDriveContents(mGoogleApiClient)
-                .setResultCallback(driveContentsCallback);
-
-    }
-
-    public void onClickOpenFile(View view) {
-        fileOperation = false;
-
-        // create new contents resource
-        Drive.DriveApi.newDriveContents(mGoogleApiClient)
-                .setResultCallback(driveContentsCallbacks);
-    }
-
-    /**
-     * This is Result result handler of Drive contents.
-     * this callback method call CreateFileOnGoogleDrive() method
-     * and also call OpenFileFromGoogleDrive() method, send intent onActivityResult() method to handle result.
-     */
     ResultCallback<DriveApi.DriveContentsResult> driveContentsCallbacks =
             new ResultCallback<DriveApi.DriveContentsResult>() {
                 @Override

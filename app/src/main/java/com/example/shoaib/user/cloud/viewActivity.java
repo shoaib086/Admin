@@ -66,8 +66,6 @@ public class viewActivity extends Activity implements GoogleApiClient.Connection
     // A view of dialog that ask to choose between upload or watch video
     MaterialDialog chooseDialog;
 
-    AppCompatButton viewSavedVideosButton;
-    AppCompatButton viewDriveActionButton;
 
 
     // Permission code called when write and read permission is triggered (SDK>Marshmallow)

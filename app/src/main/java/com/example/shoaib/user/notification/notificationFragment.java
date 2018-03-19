@@ -74,7 +74,7 @@ public class notificationFragment extends Fragment implements View.OnClickListen
             public void onClick(View view, int position) {
                 Notification movie = movieList.get(position);
                 AppConstants.reqid=movie.getVideoid();
-                Toast.makeText(getContext().getApplicationContext(), movie.getVideoid() + " is selected!", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext().getApplicationContext(), movie.getVideoid() + " is selected!", Toast.LENGTH_SHORT).show();
                 FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
                 playvideoFragment fragment = new playvideoFragment();
                 fragmentTransaction.replace(R.id.content_frame, fragment);
@@ -98,8 +98,8 @@ public class notificationFragment extends Fragment implements View.OnClickListen
 
     @Override
     public void onSuccess(String requestTag, Object data) throws UnsupportedEncodingException {
-        Toast.makeText(getActivity(), data.toString(), Toast.LENGTH_LONG).show();
-        Log.d("tts", data.toString());
+      //  Toast.makeText(getActivity(), data.toString(), Toast.LENGTH_LONG).show();
+        Log.d("done", data.toString());
         JSONObject mainObj = null;
         try {
             mainObj = new JSONObject(data.toString());
@@ -114,7 +114,7 @@ public class notificationFragment extends Fragment implements View.OnClickListen
                             String [] time = date[1].split("\\.");
                             String mainChapterNumber = date[1].split("\\.", 2)[0];
                             Log.d("done",mainChapterNumber);
-                            String detection="Activity has been detected on camera "+elem.getString("name")+" Faces has been detected "+elem.getString("faces")+" at "+date[0]+" "+mainChapterNumber;
+                            String detection="Activity has been detected on camera '"+elem.getString("name")+"'. Faces has been detected are "+elem.getString("faces")+" at Date: "+date[0]+" Time: "+mainChapterNumber;
                            // Notification movie = new Notification(elem.getString("activity"), elem.getString("faces"), elem.getString("datetime"),elem.getString("videoid"));
                             movie = new Notification(detection,elem.getString("videoid"));
                             movieList.add(movie);

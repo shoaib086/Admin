@@ -10,7 +10,7 @@ public class AppConstants {
 
     //Urls
    // public static final String BASE_URL = "http://reqres.in/api/";172.20.52.43:3000  192.168.10.17
-    public static final String ip_address="http://192.168.10.18:3000";
+    public static final String ip_address="http://192.168.10.8:3000";
     public static final String signin_URL = ip_address+"/login";
     public static final String signup_URL = ip_address+"/register";
     public static final String sendmail_URL = ip_address+"/sendmail";
